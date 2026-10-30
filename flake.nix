@@ -8,8 +8,11 @@
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    home-manager-src = {
+      url = "github:nix-community/home-manager/095fef2f265c3c0da4fe315efba8f8a04495ab34";
+      flake = false;
+    };
     nix-devenv.url = "github:dryvist/nix-devenv?ref=v0";
-    herdr-upstream.url = "github:kevinpita/herdr-nix";
     collie-upstream.url = "github:AltanS/collie";
     native-ui.url = "github:penso/herdr-gpui";
   };
@@ -48,7 +51,15 @@
         }:
         {
           packages = {
-            herdr = inputs.herdr-upstream.packages.${system}.herdr-tui;
+            herdr = pkgs.symlinkJoin {
+              name = "herdr-${pkgs.herdr.version}-with-integrations";
+              paths = [ pkgs.herdr ];
+              inherit (pkgs.herdr) version meta;
+              postBuild = ''
+                mkdir -p "$out/share/herdr"
+                cp -R ${pkgs.herdr.src}/src/integration/assets "$out/share/herdr/integrations"
+              '';
+            };
             collie = inputs.collie-upstream.packages.${system}.collie;
             default = self.packages.${system}.herdr;
           };

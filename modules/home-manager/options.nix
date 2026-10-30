@@ -71,5 +71,5 @@ in
   };
   config.programs.herdr.package =
     lib.mkDefault
-      inputs.herdr-upstream.packages.${pkgs.stdenv.hostPlatform.system}.herdr-tui;
+      inputs.self.packages.${pkgs.stdenv.hostPlatform.system}.herdr;
 }

@@ -13,7 +13,7 @@ in
     enable = lib.mkEnableOption "Herdr and its per-user server";
     package = lib.mkOption {
       type = lib.types.package;
-      default = inputs.herdr-upstream.packages.${pkgs.stdenv.hostPlatform.system}.herdr-tui;
+      default = inputs.self.packages.${pkgs.stdenv.hostPlatform.system}.herdr;
       description = "Herdr TUI package.";
     };
     server.enable = lib.mkEnableOption "a Herdr systemd user service";
