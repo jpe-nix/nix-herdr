@@ -33,6 +33,15 @@ let
           collie = {
             enable = true;
             package = pkgs.hello;
+            settings.network.host = "127.0.0.2";
+            environment = {
+              PATH = "/consumer/bin";
+              COLLIE_HOST = "127.0.0.3";
+              HOME = "/ignored/home";
+              COLLIE_CONFIG = "/ignored/config";
+              HERDR_SOCKET_PATH = "/ignored/socket";
+              COLLIE_MUX = "ignored";
+            };
           };
         };
       }
@@ -52,6 +61,11 @@ let
           enable = true;
           package = pkgs.hello;
           server.enable = true;
+          collie = {
+            enable = true;
+            package = pkgs.hello;
+            settings.network.host = "127.0.0.2";
+          };
         };
       }
     ];
@@ -80,6 +94,11 @@ let
       defaultHome.config.launchd.agents.herdr.config.EnvironmentVariables
     else
       defaultHome.config.systemd.user.services.herdr.Service.Environment;
+  defaultCollieEnv =
+    if pkgs.stdenv.hostPlatform.isDarwin then
+      defaultHome.config.launchd.agents.collie.config.EnvironmentVariables
+    else
+      defaultHome.config.systemd.user.services.collie.Service.Environment;
 in
 assert
   if pkgs.stdenv.hostPlatform.isDarwin then
@@ -93,6 +112,11 @@ assert
       && pkgs.lib.hasInfix "/usr/local/bin" value
     ) defaultEnv;
 assert builtins.hasAttr ".config/collie/nix-config.toml" cfg.home.file;
+assert
+  if pkgs.stdenv.hostPlatform.isDarwin then
+    !(defaultCollieEnv ? COLLIE_HOST)
+  else
+    !(builtins.any (pkgs.lib.hasPrefix "COLLIE_HOST=") defaultCollieEnv);
 assert builtins.hasAttr "${homeDir}/.config/custom/herdr/agent-detection/example.toml"
   cfg.home.file;
 assert
@@ -110,7 +134,11 @@ assert
     && herdrEnv.HOME == homeDir
     && cfg.launchd.agents.herdr.config.ProgramArguments == command
     && collieEnv.HERDR_SOCKET_PATH == socket
-    && collieEnv.COLLIE_HOST == "127.0.0.1"
+    && collieEnv.COLLIE_HOST == "127.0.0.3"
+    && collieEnv.PATH == "/consumer/bin"
+    && collieEnv.HOME == homeDir
+    && collieEnv.COLLIE_CONFIG == "${homeDir}/.config/collie/nix-config.toml"
+    && collieEnv.COLLIE_MUX == "herdr"
     && cfg.launchd.agents.herdr.config.ProcessType == "Background"
     && cfg.launchd.agents.herdr.config.StandardOutPath == "${homeDir}/Library/Logs/herdr/herdr.log"
     &&
@@ -129,5 +157,12 @@ assert
         command
     ) cfg.systemd.user.services.herdr.Service.ExecStart
     && builtins.elem "HERDR_SOCKET_PATH=${socket}" collieEnv
-    && builtins.elem "COLLIE_HOST=127.0.0.1" collieEnv;
-pkgs.runCommand "herdr-services" { } "touch $out"
+    && builtins.elem "COLLIE_HOST=127.0.0.3" collieEnv
+    && builtins.elem "PATH=/consumer/bin" collieEnv
+    && builtins.elem "HOME=${homeDir}" collieEnv
+    && builtins.elem "COLLIE_CONFIG=${homeDir}/.config/collie/nix-config.toml" collieEnv
+    && builtins.elem "COLLIE_MUX=herdr" collieEnv;
+pkgs.runCommand "herdr-services" { } ''
+  grep -F 'host = "127.0.0.2"' ${defaultHome.config.home.file.".config/collie/nix-config.toml".source}
+  touch "$out"
+''

@@ -8,13 +8,15 @@
 let
   cfg = config.programs.herdr;
   inherit (cfg) collie;
-  env = collie.environment // {
+  env = {
+    PATH = "${config.home.profileDirectory}/bin:/run/current-system/sw/bin:/usr/bin:/bin";
+  }
+  // collie.environment
+  // {
     HOME = config.home.homeDirectory;
-    COLLIE_HOST = "127.0.0.1";
     COLLIE_MUX = "herdr";
     COLLIE_CONFIG = "${config.home.homeDirectory}/.config/collie/nix-config.toml";
     HERDR_SOCKET_PATH = "${config.xdg.configHome}/herdr/herdr.sock";
-    PATH = "${config.home.profileDirectory}/bin:/run/current-system/sw/bin:/usr/bin:/bin";
   };
 in
 {
