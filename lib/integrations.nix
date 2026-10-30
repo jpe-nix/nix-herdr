@@ -229,7 +229,44 @@ let
         }
       ];
     };
+  externalRendererAgents = [
+    "devin"
+    "droid"
+    "kimi"
+    "hermes"
+    "qodercli"
+    "cursor"
+    "mastracode"
+  ];
+  # Import next to an app-owned renderer. settingsPath names its complete
+  # JSON, TOML, or YAML settings option; the option must merge list entries.
+  # Destination paths follow the upstream default HOME layout.
+  mkRendererModule =
+    { agent, settingsPath }:
+    assert lib.assertMsg (builtins.elem agent externalRendererAgents)
+      "Herdr: ${agent} is not a target for external renderer modules.";
+    assert lib.assertMsg (
+      settingsPath != [ ] && lib.all builtins.isString settingsPath
+    ) "Herdr: settingsPath must be a non-empty list of option names.";
+    { config, ... }:
+    {
+      options.programs.herdr._integrationRenderers.${agent} = lib.mkOption {
+        type = lib.types.bool;
+        default = true;
+        readOnly = true;
+        internal = true;
+        description = "An app-owned renderer module was imported for ${agent}.";
+      };
+      config = lib.mkIf (
+        config.programs.herdr.enable && config.programs.herdr.integrations.${agent}.enable
+      ) (lib.setAttrByPath settingsPath (fragments config.home.homeDirectory).${agent});
+    };
 in
 {
-  inherit names files fragments;
+  inherit
+    names
+    files
+    fragments
+    mkRendererModule
+    ;
 }

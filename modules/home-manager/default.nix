@@ -1,7 +1,6 @@
 { inputs }:
 { ... }:
 {
-  _module.args.herdrClaudeCode = inputs.nix-claude-code;
   imports = [
     (import ./options.nix { inherit inputs; })
     ./settings.nix

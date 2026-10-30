@@ -12,14 +12,22 @@ let
   selected = name: cfg.integrations.${name}.enable;
   active = name: cfg.enable && selected name;
   available = path: lib.hasAttrByPath path options;
-  claudeSource = config._module.args.herdrClaudeCode or null;
-  claudeAvailable = available [
+  claudeSettingsAvailable = available [
     "programs"
     "claude"
     "settings"
   ];
-  claudeSourceAvailable =
-    claudeSource != null && builtins.pathExists "${claudeSource}/lib/typed-hooks.nix";
+  claudeHookOption =
+    if claudeSettingsAvailable then
+      (options.programs.claude.settings.type.getSubOptions [ ]).hooks or null
+    else
+      null;
+  claudeHookType = if claudeHookOption == null then null else claudeHookOption.type;
+  claudeAvailable =
+    claudeHookType != null
+    && claudeHookType.name == "attrsOf"
+    && (claudeHookType.nestedTypes.elemType.name or null) == "listOf"
+    && (claudeHookType.nestedTypes.elemType.nestedTypes.elemType.name or null) == "attrs";
   codexAvailable = available [
     "programs"
     "codex"
@@ -37,11 +45,26 @@ let
       "opencode"
       "cliSettings"
     ];
+  qwenAvailable = available [
+    "programs"
+    "qwen-code"
+    "nativeHooks"
+  ];
+  copilotAvailable = available [
+    "programs"
+    "copilot-cli"
+    "nativeHooks"
+  ];
   agyAvailable = available [
     "programs"
     "antigravity-cli"
     "nativeHooks"
   ];
+  agyDir =
+    if agyAvailable then
+      config.programs.antigravity-cli.nativeConfigDir or ".gemini/config"
+    else
+      ".gemini/config";
   opencodeDir =
     if opencodeAvailable then
       config.programs.opencode.configDir or ".config/opencode"
@@ -63,10 +86,6 @@ let
       }
     ];
   };
-  typedClaudeHooks = import "${claudeSource}/lib/typed-hooks.nix" {
-    inherit lib;
-    cfg = config.programs.claude;
-  };
   fragments = catalog.fragments config.home.homeDirectory;
   direct = [
     "pi"
@@ -79,12 +98,16 @@ let
     "codex"
     "opencode"
     "antigravity-cli"
+    "copilot"
+    "qwen"
   ];
   unsupported = builtins.filter (name: !(builtins.elem name managed)) catalog.names;
   fileFor = destination: asset: {
     name =
       if destination == ".claude/hooks/herdr-agent-state.sh" then
         "${claudeDir}/hooks/herdr-agent-state.sh"
+      else if lib.hasPrefix ".gemini/config/" destination then
+        "${agyDir}/${lib.removePrefix ".gemini/config/" destination}"
       else if lib.hasPrefix ".config/opencode/" destination then
         "${opencodeDir}/${lib.removePrefix ".config/opencode/" destination}"
       else
@@ -105,8 +128,15 @@ in
     {
       assertions =
         (map (name: {
-          assertion = !active name;
-          message = "programs.herdr.integrations.${name} requires an app-owned configuration renderer. Consume lib.integrations.fragments and lib.integrations.files with that renderer; no shared app config is overwritten.";
+          assertion =
+            !active name
+            || available [
+              "programs"
+              "herdr"
+              "_integrationRenderers"
+              name
+            ];
+          message = "programs.herdr.integrations.${name} requires an app-owned renderer. Import lib.integrations.mkRendererModule with the target and an existing app settings option.";
         }) unsupported)
         ++ [
           {
@@ -114,8 +144,8 @@ in
             message = "Herdr integrations require programs.herdr.package with bundled integration assets.";
           }
           {
-            assertion = !active "claude" || (claudeAvailable && claudeSourceAvailable);
-            message = "Herdr Claude integration requires the nix-claude-code renderer and _module.args.herdrClaudeCode pointing to its source with lib/typed-hooks.nix.";
+            assertion = !active "claude" || claudeAvailable;
+            message = "Herdr Claude integration requires nix-claude-code with its typed, mergeable programs.claude.settings.hooks option.";
           }
           {
             assertion = !active "opencode" || opencodeAvailable;
@@ -134,6 +164,14 @@ in
             message = "Enable programs.antigravity-cli to render the Herdr hook.";
           }
           {
+            assertion = !active "qwen" || (qwenAvailable && config.programs.qwen-code.enable);
+            message = "Herdr Qwen integration requires enabled programs.qwen-code and its nativeHooks extension renderer.";
+          }
+          {
+            assertion = !active "copilot" || (copilotAvailable && config.programs.copilot-cli.enable);
+            message = "Herdr Copilot integration requires enabled programs.copilot-cli and its nativeHooks renderer.";
+          }
+          {
             assertion = !active "codex" || codexAvailable;
             message = "Herdr Codex integration requires the programs.codex.hooks.events renderer from nix-ai.";
           }
@@ -148,18 +186,17 @@ in
         ];
     }
     (lib.mkMerge (
-      map (name: lib.mkIf (active name && cfg.package != null) { home.file = filesFor name; }) managed
+      map (
+        name: lib.mkIf (active name && cfg.package != null) { home.file = filesFor name; }
+      ) catalog.names
     ))
     (lib.mkIf (active "grok" && cfg.package != null) {
       home.file.".grok/hooks/herdr.json".source =
         pkgs.writers.writeJSON "herdr-grok-hooks.json" fragments.grok;
     })
     (lib.optionalAttrs claudeAvailable (
-      lib.mkIf (active "claude" && claudeSourceAvailable) {
-        programs.claude.settings.hooks = lib.zipAttrsWith (_: lib.concatLists) [
-          typedClaudeHooks
-          claudeHooks
-        ];
+      lib.mkIf (active "claude") {
+        programs.claude.settings.hooks = claudeHooks;
       }
     ))
     (lib.optionalAttrs opencodeAvailable (
@@ -172,8 +209,26 @@ in
     ))
     (lib.optionalAttrs agyAvailable (
       lib.mkIf (active "antigravity-cli") {
-        programs.antigravity-cli.nativeHooks = fragments.antigravity-cli;
+        programs.antigravity-cli.nativeHooks = lib.recursiveUpdate fragments.antigravity-cli {
+          herdr.PreInvocation = map (
+            entry:
+            entry
+            // {
+              command =
+                lib.replaceStrings
+                  [ "${config.home.homeDirectory}/.gemini/config/" ]
+                  [ "${config.home.homeDirectory}/${agyDir}/" ]
+                  entry.command;
+            }
+          ) fragments.antigravity-cli.herdr.PreInvocation;
+        };
       }
+    ))
+    (lib.optionalAttrs qwenAvailable (
+      lib.mkIf (active "qwen") { programs.qwen-code.nativeHooks = fragments.qwen.hooks; }
+    ))
+    (lib.optionalAttrs copilotAvailable (
+      lib.mkIf (active "copilot") { programs.copilot-cli.nativeHooks = fragments.copilot.hooks; }
     ))
     (lib.optionalAttrs codexAvailable (
       lib.mkIf (active "codex") {
