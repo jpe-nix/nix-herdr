@@ -4,6 +4,15 @@ result-*
 
 # Ignore automatically generated direnv output
 .direnv
+.envrc.local
+.pre-commit-config.yaml
+
+# Local worktrees and workstation files
+.worktrees/
+.DS_Store
+.env
+.env.*
+!.env.example
 
 # Ignore NixOS interactive test driver history
 **/.nixos-test-history
