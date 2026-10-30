@@ -20,7 +20,7 @@ jobs:
             runner_label: ubuntu-24.04-arm
           - system: x86_64-linux
             runner_label: ubuntu-24.04
-    uses: dryvist/.github/.github/workflows/_nix-validate.yml@3d5ae6608afc2e30760499415a29b8e1edfe0ad7 # v1.13.0
+    uses: JacobPEvans/.github/.github/workflows/_nix-validate.yml@ffe26a1b65a00afec6a06d8001ef07896306478e # v1.40.2
     with:
       runner_label: ${{ matrix.runner_label }}
       all_systems: false
