@@ -13,14 +13,13 @@ let
   active = name: cfg.enable && selected name;
   available = path: lib.hasAttrByPath path options;
   claudeSource = config._module.args.herdrClaudeCode or null;
-  claudeAvailable =
-    available [
-      "programs"
-      "claude"
-      "settings"
-    ]
-    && claudeSource != null
-    && builtins.pathExists "${claudeSource}/lib/typed-hooks.nix";
+  claudeAvailable = available [
+    "programs"
+    "claude"
+    "settings"
+  ];
+  claudeSourceAvailable =
+    claudeSource != null && builtins.pathExists "${claudeSource}/lib/typed-hooks.nix";
   codexAvailable = available [
     "programs"
     "codex"
@@ -115,7 +114,7 @@ in
             message = "Herdr integrations require programs.herdr.package with bundled integration assets.";
           }
           {
-            assertion = !active "claude" || claudeAvailable;
+            assertion = !active "claude" || (claudeAvailable && claudeSourceAvailable);
             message = "Herdr Claude integration requires the nix-claude-code renderer and _module.args.herdrClaudeCode pointing to its source with lib/typed-hooks.nix.";
           }
           {
@@ -156,7 +155,7 @@ in
         pkgs.writers.writeJSON "herdr-grok-hooks.json" fragments.grok;
     })
     (lib.optionalAttrs claudeAvailable (
-      lib.mkIf (active "claude") {
+      lib.mkIf (active "claude" && claudeSourceAvailable) {
         programs.claude.settings.hooks = lib.zipAttrsWith (_: lib.concatLists) [
           typedClaudeHooks
           claudeHooks
