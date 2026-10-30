@@ -7,21 +7,23 @@ _:
   ...
 }:
 let
-  catalog = import ../../lib/integrations.nix { inherit lib; };
+  catalog = import ../../lib/integrations.nix {
+    inherit lib;
+    bash = lib.getExe pkgs.bash;
+    sh = lib.getExe pkgs.dash;
+  };
   cfg = config.programs.herdr;
   selected = name: cfg.integrations.${name}.enable;
   active = name: cfg.enable && selected name;
   available = path: lib.hasAttrByPath path options;
-  claudeSettingsAvailable = available [
+  claudeEventsPath = [
     "programs"
     "claude"
-    "settings"
+    "hooks"
+    "events"
   ];
   claudeHookOption =
-    if claudeSettingsAvailable then
-      (options.programs.claude.settings.type.getSubOptions [ ]).hooks or null
-    else
-      null;
+    if available claudeEventsPath then lib.getAttrFromPath claudeEventsPath options else null;
   claudeHookType = if claudeHookOption == null then null else claudeHookOption.type;
   claudeAvailable =
     claudeHookType != null
@@ -79,7 +81,7 @@ let
         hooks = [
           {
             type = "command";
-            command = "bash ${lib.escapeShellArg claudePath} session";
+            command = "${lib.getExe pkgs.bash} ${lib.escapeShellArg claudePath} session";
             timeout = 10;
           }
         ];
@@ -145,7 +147,7 @@ in
           }
           {
             assertion = !active "claude" || claudeAvailable;
-            message = "Herdr Claude integration requires nix-claude-code with its typed, mergeable programs.claude.settings.hooks option.";
+            message = "Herdr Claude integration requires nix-claude-code with its typed, mergeable programs.claude.hooks.events option.";
           }
           {
             assertion = !active "opencode" || opencodeAvailable;
@@ -196,7 +198,7 @@ in
     })
     (lib.optionalAttrs claudeAvailable (
       lib.mkIf (active "claude") {
-        programs.claude.settings.hooks = claudeHooks;
+        programs.claude.hooks.events = claudeHooks;
       }
     ))
     (lib.optionalAttrs opencodeAvailable (

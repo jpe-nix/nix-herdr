@@ -1,11 +1,15 @@
-{ lib }:
+{
+  lib,
+  bash ? "bash",
+  sh ? "sh",
+}:
 let
   command =
     shell: path: action:
     "${shell} ${lib.escapeShellArg path} ${action}";
   hook = path: action: {
     type = "command";
-    command = command "bash" path action;
+    command = command bash path action;
     timeout = 10;
   };
   wrapped = path: action: { hooks = [ (hook path action) ]; };
@@ -98,7 +102,7 @@ let
         event: action: matcher:
         {
           inherit event;
-          command = command "bash" kimiPath action;
+          command = command bash kimiPath action;
           timeout = 10;
         }
         // lib.optionalAttrs (matcher != null) { inherit matcher; };
@@ -109,7 +113,7 @@ let
         value = [
           {
             type = "command";
-            command = command "bash" mastraPath action;
+            command = command bash mastraPath action;
             timeout = 10000;
             description = "Report MastraCode agent state to Herdr";
           }
@@ -127,7 +131,7 @@ let
       copilot.hooks.SessionStart = [
         {
           type = "command";
-          bash = "bash ${lib.escapeShellArg (p ".copilot/hooks/herdr-agent-state.sh")}";
+          bash = "${bash} ${lib.escapeShellArg (p ".copilot/hooks/herdr-agent-state.sh")}";
           timeoutSec = 10;
         }
       ];
@@ -163,7 +167,7 @@ let
       qwen.hooks.SessionStart = [ (matched (p ".qwen/hooks/herdr-agent-session.sh") 10000) ];
       cursor = {
         version = 1;
-        hooks.sessionStart = [ { command = command "bash" (p ".cursor/herdr-agent-state.sh") "session"; } ];
+        hooks.sessionStart = [ { command = command bash (p ".cursor/herdr-agent-state.sh") "session"; } ];
       };
       mastracode = builtins.listToAttrs (
         map (x: mastra (builtins.elemAt x 0) (builtins.elemAt x 1)) [
@@ -222,7 +226,7 @@ let
             (
               (hook (p ".grok/hooks/herdr-agent-state.sh") "session")
               // {
-                command = command "sh" (p ".grok/hooks/herdr-agent-state.sh") "session";
+                command = command sh (p ".grok/hooks/herdr-agent-state.sh") "session";
               }
             )
           ];
@@ -248,7 +252,7 @@ let
     assert lib.assertMsg (
       settingsPath != [ ] && lib.all builtins.isString settingsPath
     ) "Herdr: settingsPath must be a non-empty list of option names.";
-    { config, ... }:
+    { config, pkgs, ... }:
     {
       options.programs.herdr._integrationRenderers.${agent} = lib.mkOption {
         type = lib.types.bool;
@@ -257,9 +261,19 @@ let
         internal = true;
         description = "An app-owned renderer module was imported for ${agent}.";
       };
-      config = lib.mkIf (
-        config.programs.herdr.enable && config.programs.herdr.integrations.${agent}.enable
-      ) (lib.setAttrByPath settingsPath (fragments config.home.homeDirectory).${agent});
+      config =
+        lib.mkIf (config.programs.herdr.enable && config.programs.herdr.integrations.${agent}.enable)
+          (
+            lib.setAttrByPath settingsPath
+              (
+                (import ./integrations.nix {
+                  inherit lib;
+                  bash = lib.getExe pkgs.bash;
+                  sh = lib.getExe pkgs.dash;
+                }).fragments
+                  config.home.homeDirectory
+              ).${agent}
+          );
     };
 in
 {

@@ -67,13 +67,11 @@ let
     options.programs.claude = {
       enable = lib.mkEnableOption "Claude";
       settings = lib.mkOption {
-        type = lib.types.submodule {
-          freeformType = lib.types.attrs;
-          options.hooks = lib.mkOption {
-            type = lib.types.attrsOf (lib.types.listOf lib.types.attrs);
-            default = { };
-          };
-        };
+        type = lib.types.attrs;
+        default = { };
+      };
+      hooks.events = lib.mkOption {
+        type = lib.types.attrsOf (lib.types.listOf lib.types.attrs);
         default = { };
       };
     };
@@ -90,15 +88,18 @@ let
   claude = evaluate {
     imports = [
       claudeOwner
-      { programs.claude.settings.hooks.SessionStart = [ { hooks = [ { command = "first"; } ]; } ]; }
-      { programs.claude.settings.hooks.SessionStart = [ { hooks = [ { command = "second"; } ]; } ]; }
+      { programs.claude.hooks.events.SessionStart = [ { hooks = [ { command = "first"; } ]; } ]; }
+      { programs.claude.hooks.events.SessionStart = [ { hooks = [ { command = "second"; } ]; } ]; }
     ];
     programs = {
       herdr = {
         enable = true;
         integrations.claude.enable = true;
       };
-      claude.enable = true;
+      claude = {
+        enable = true;
+        settings.hooks.SessionStart = [ { hooks = [ { command = "legacy"; } ]; } ];
+      };
     };
   };
   oldClaude = evaluate {
@@ -290,13 +291,15 @@ assert builtins.attrNames codex.home.file == [ ".codex/herdr-agent-state.sh" ];
 assert !valid missing;
 assert valid claude;
 assert !valid oldClaude;
-assert builtins.length claude.programs.claude.settings.hooks.SessionStart == 3;
+assert builtins.length claude.programs.claude.hooks.events.SessionStart == 3;
+assert
+  claude.programs.claude.settings.hooks.SessionStart == [ { hooks = [ { command = "legacy"; } ]; } ];
 assert lib.all
   (
     name:
     lib.any (
       entry: lib.any (hook: lib.hasInfix name hook.command) entry.hooks
-    ) claude.programs.claude.settings.hooks.SessionStart
+    ) claude.programs.claude.hooks.events.SessionStart
   )
   [
     "first"
@@ -341,5 +344,31 @@ pkgs.runCommand "herdr-integration-assets" { } ''
   ${lib.concatMapStringsSep "\n" (
     asset: ''test -f "${package}/share/herdr/integrations/${asset}"''
   ) allAssets}
+  ${pkgs.python3}/bin/python3 - <<'PY'
+  import json
+  import os
+  import socket
+  import subprocess
+  import tempfile
+
+  with tempfile.TemporaryDirectory(dir=os.environ["TMPDIR"]) as directory:
+      for agent in ("claude", "grok"):
+          path = os.path.join(directory, agent + ".sock")
+          with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as server:
+              server.bind(path)
+              server.listen(1)
+              server.settimeout(3)
+              env = {"PATH": "", "TMPDIR": directory, "HERDR_ENV": "1",
+                     "HERDR_SOCKET_PATH": path, "HERDR_PANE_ID": "test-pane"}
+              subprocess.run(
+                  ["${lib.getExe pkgs.dash}", "${package}/share/herdr/integrations/" + agent + "/herdr-agent-state.sh", "session"],
+                  input=json.dumps({"hook_event_name": "SessionStart", "session_id": "test-session"}),
+                  text=True, env=env, check=True, timeout=5,
+              )
+              with server.accept()[0] as client:
+                  request = json.loads(client.recv(8192))
+              assert request["method"] == "pane.report_agent_session"
+              assert request["params"]["agent_session_id"] == "test-session"
+  PY
   touch "$out"
 ''

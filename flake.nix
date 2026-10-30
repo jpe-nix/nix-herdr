@@ -58,6 +58,16 @@
               postBuild = ''
                 mkdir -p "$out/share/herdr"
                 cp -R ${pkgs.herdr.src}/src/integration/assets "$out/share/herdr/integrations"
+                chmod -R u+w "$out/share/herdr/integrations"
+                for hook in "$out"/share/herdr/integrations/*/*.sh; do
+                  substituteInPlace "$hook" --replace-fail python3 ${pkgs.python3}/bin/python3
+                  if grep -q 'mktemp ' "$hook"; then
+                    substituteInPlace "$hook" \
+                      --replace-fail 'mktemp ' '${pkgs.coreutils}/bin/mktemp ' \
+                      --replace-fail 'cat >' '${pkgs.coreutils}/bin/cat >' \
+                      --replace-fail 'rm -f ' '${pkgs.coreutils}/bin/rm -f '
+                  fi
+                done
               '';
             };
             collie = inputs.collie-upstream.packages.${system}.collie;
