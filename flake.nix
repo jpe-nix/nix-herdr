@@ -39,25 +39,35 @@
         nixosModules.default = import ./modules/nixos.nix { inherit inputs; };
         darwinModules.default = import ./modules/darwin.nix;
       };
-      perSystem = { system, pkgs, ... }: {
-        packages = {
-          herdr = inputs.herdr-upstream.packages.${system}.herdr-tui;
-          collie = inputs.collie-upstream.packages.${system}.collie;
-          default = self.packages.${system}.herdr;
-        };
-        apps.default = {
-          type = "app";
-          program = "${self.packages.${system}.herdr}/bin/herdr";
-        };
-        checks = {
-          defaults = import ./checks/defaults.nix { inherit inputs pkgs; };
-          services = import ./checks/services.nix { inherit inputs pkgs; };
-          integrations = import ./checks/integrations.nix {
-            inherit pkgs;
-            inherit (pkgs) lib;
-            package = self.packages.${system}.herdr;
+      perSystem =
+        {
+          system,
+          pkgs,
+          config,
+          ...
+        }:
+        {
+          packages = {
+            herdr = inputs.herdr-upstream.packages.${system}.herdr-tui;
+            collie = inputs.collie-upstream.packages.${system}.collie;
+            default = self.packages.${system}.herdr;
+          };
+          apps.default = {
+            type = "app";
+            program = "${self.packages.${system}.herdr}/bin/herdr";
+          };
+          devShells.default = pkgs.mkShell {
+            inputsFrom = [ config.pre-commit.devShell ];
+          };
+          checks = {
+            defaults = import ./checks/defaults.nix { inherit inputs pkgs; };
+            services = import ./checks/services.nix { inherit inputs pkgs; };
+            integrations = import ./checks/integrations.nix {
+              inherit pkgs;
+              inherit (pkgs) lib;
+              package = self.packages.${system}.herdr;
+            };
           };
         };
-      };
     };
 }
