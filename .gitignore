@@ -5,6 +5,7 @@ result-*
 # Ignore automatically generated direnv output
 .direnv
 .envrc.local
+.pre-commit-config.yaml
 
 # Local worktrees and workstation files
 .worktrees/
