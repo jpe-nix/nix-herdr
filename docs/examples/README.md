@@ -34,7 +34,6 @@ directory when app settings refer to a Herdr hook file.
 ## Claude owner renderer
 
 The Claude adapter expects the app-owned module to declare
-`programs.claude.settings.hooks` as an attribute set of event names to lists
-of hook records. The owner renderer must preserve its existing typed hooks
-and concatenate Herdr's contributed hooks into each event list. A freeform
-hooks setting that replaces the event lists is not compatible.
+`programs.claude.hooks.events` as an attribute set of event names to lists
+of hook records. The owner renderer combines these with the legacy
+`programs.claude.settings.hooks` for each event.

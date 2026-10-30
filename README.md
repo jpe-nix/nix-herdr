@@ -13,11 +13,11 @@ nix run github:jpe-nix/nix-herdr
 
 ## Home Manager
 
-Use a Home Manager revision that provides `programs.herdr`, and import the module
-into your Home Manager configuration with `inputs.nix-herdr`
-available to the module. This example adds a saved SSH machine and enables the
-Pi integration; replace the example SSH alias with an entry from your own
-OpenSSH configuration.
+Import the module into your Home Manager configuration with `inputs.nix-herdr`
+available to the module. The module uses its pinned upstream Home Manager Herdr
+implementation, including with Home Manager 26.05. This example adds a saved
+SSH machine and enables the Pi integration; replace the example SSH alias with
+an entry from your own OpenSSH configuration.
 
 ```nix
 { inputs, ... }:
@@ -108,9 +108,8 @@ integration runs an imperative installer or replaces a shared app
 configuration file.
 
 The Claude adapter also requires the app-owned renderer to declare
-`programs.claude.settings.hooks` as event-keyed lists of hook records and merge
-existing typed hooks with Herdr hooks for each event. A freeform hooks setting
-that replaces the event lists is not compatible.
+`programs.claude.hooks.events` as event-keyed lists of hook records. The owner
+renderer combines these with the legacy `programs.claude.settings.hooks`.
 
 ## Flake outputs and systems
 
@@ -138,7 +137,7 @@ architecture.
 ## Upstream projects
 
 - Herdr TUI: [herdrdev/herdr](https://github.com/herdrdev/herdr)
-- Nix packaging: [kevinpita/herdr-nix](https://github.com/kevinpita/herdr-nix)
+- Herdr package: [Nixpkgs](https://github.com/NixOS/nixpkgs)
 - Native UI: [penso/herdr-gpui](https://github.com/penso/herdr-gpui)
 - Collie bridge: [AltanS/collie](https://github.com/AltanS/collie)
 
