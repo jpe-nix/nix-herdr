@@ -51,6 +51,37 @@ let
       }
     ];
   };
+  empty = inputs.home-manager.lib.homeManagerConfiguration {
+    inherit pkgs;
+    modules = [
+      inputs.self.homeManagerModules.default
+      {
+        home = {
+          username = "test";
+          homeDirectory = if pkgs.stdenv.hostPlatform.isDarwin then "/Users/test" else "/home/test";
+          stateVersion = "26.05";
+        };
+        programs.herdr.enable = true;
+      }
+    ];
+  };
+  nativeUI = inputs.home-manager.lib.homeManagerConfiguration {
+    inherit pkgs;
+    modules = [
+      inputs.self.homeManagerModules.default
+      {
+        home = {
+          username = "test";
+          homeDirectory = if pkgs.stdenv.hostPlatform.isDarwin then "/Users/test" else "/home/test";
+          stateVersion = "26.05";
+        };
+        programs.herdr = {
+          enable = true;
+          nativeUI.enable = true;
+        };
+      }
+    ];
+  };
 in
 assert !cfg.enable;
 assert !cfg.server.enable;
@@ -61,7 +92,9 @@ assert !(builtins.tryEval legacy.config.programs.herdr.enable).success;
 assert cfg.machines == null;
 assert builtins.all (integration: !integration.enable) (builtins.attrValues cfg.integrations);
 assert !enabled.config.programs.herdr.server.enable;
-assert builtins.hasAttr ".config/herdr/config.toml" enabled.config.home.file;
+assert builtins.hasAttr "herdr/config.toml" enabled.config.xdg.configFile;
+assert !(builtins.hasAttr "herdr/config.toml" empty.config.xdg.configFile);
+assert !pkgs.stdenv.hostPlatform.isDarwin || !(builtins.tryEval nativeUI.config.assertions).success;
 assert builtins.hasAttr "${enabled.config.xdg.stateHome}/herdr/client/endpoints.json"
   enabled.config.home.file;
 assert

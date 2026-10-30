@@ -13,7 +13,8 @@ nix run github:jpe-nix/nix-herdr
 
 ## Home Manager
 
-Import the module into your Home Manager configuration with `inputs.nix-herdr`
+Use a Home Manager revision that provides `programs.herdr`, and import the module
+into your Home Manager configuration with `inputs.nix-herdr`
 available to the module. This example adds a saved SSH machine and enables the
 Pi integration; replace the example SSH alias with an entry from your own
 OpenSSH configuration.
@@ -44,8 +45,9 @@ to `default`, and `enabled` defaults to `true`. The TUI and native UI share the
 catalog, while client selection state remains user-owned. Do not put SSH
 credentials or private keys in Nix settings.
 
-The TUI package is installed when `programs.herdr.enable` is true. `settings`
-supplies Herdr TOML settings, and `agentManifests` supplies TOML
+The TUI package is installed when `programs.herdr.enable` is true. Home Manager
+owns `programs.herdr.settings` and its TOML renderer; empty settings leave the
+configuration file unmanaged. `agentManifests` supplies TOML
 agent-detection manifests. These values are serialized into the Nix store, so
 they must contain no secrets. The complete Home Manager consumer flake is in
 [`templates/home-manager`](templates/home-manager/).

@@ -11,10 +11,10 @@ let
           homeDirectory = homeDir;
           stateVersion = "26.05";
         };
+        xdg.configHome = "${homeDir}/.config/custom";
         programs.herdr = {
           enable = true;
           package = pkgs.hello;
-          configDir = ".config/custom-herdr";
           agentManifests.example.id = "example";
           server = {
             enable = true;
@@ -57,7 +57,7 @@ let
     ];
   };
   cfg = home.config;
-  socket = "${homeDir}/.config/custom-herdr/herdr.sock";
+  socket = "${homeDir}/.config/custom/herdr/herdr.sock";
   herdrEnv =
     if pkgs.stdenv.hostPlatform.isDarwin then
       cfg.launchd.agents.herdr.config.EnvironmentVariables
@@ -68,7 +68,7 @@ let
       cfg.launchd.agents.collie.config.EnvironmentVariables
     else
       cfg.systemd.user.services.collie.Service.Environment;
-  configPath = "${homeDir}/.config/custom-herdr/config.toml";
+  configPath = "${homeDir}/.config/custom/herdr/config.toml";
   command = [
     "/opt/example/launcher"
     "a $b %c"
@@ -93,7 +93,8 @@ assert
       && pkgs.lib.hasInfix "/usr/local/bin" value
     ) defaultEnv;
 assert builtins.hasAttr ".config/collie/nix-config.toml" cfg.home.file;
-assert builtins.hasAttr "${homeDir}/.config/herdr/agent-detection/example.toml" cfg.home.file;
+assert builtins.hasAttr "${homeDir}/.config/custom/herdr/agent-detection/example.toml"
+  cfg.home.file;
 assert
   if pkgs.stdenv.hostPlatform.isDarwin then
     builtins.elem "_exec-bridge" cfg.launchd.agents.collie.config.ProgramArguments

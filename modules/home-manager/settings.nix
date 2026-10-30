@@ -17,27 +17,24 @@ in
       }
     ];
     home = {
-      packages = lib.optional (cfg.package != null) cfg.package;
-      file = {
-        "${cfg.configDir}/config.toml".source = toml.generate "herdr-config.toml" cfg.settings;
-      }
-      // lib.optionalAttrs (cfg.machines != null) {
-        "${config.xdg.stateHome}/herdr/client/endpoints.json".source =
-          (pkgs.formats.json { }).generate "herdr-endpoints.json"
-            {
-              version = 1;
-              ssh = lib.attrValues cfg.machines;
-            };
-      }
-      // lib.mapAttrs' (
-        name: value:
-        lib.nameValuePair "${config.xdg.configHome}/herdr/agent-detection/${name}.toml" {
-          source = toml.generate "herdr-agent-${name}.toml" value;
+      file =
+        lib.optionalAttrs (cfg.machines != null) {
+          "${config.xdg.stateHome}/herdr/client/endpoints.json".source =
+            (pkgs.formats.json { }).generate "herdr-endpoints.json"
+              {
+                version = 1;
+                ssh = lib.attrValues cfg.machines;
+              };
         }
-      ) cfg.agentManifests;
+        // lib.mapAttrs' (
+          name: value:
+          lib.nameValuePair "${config.xdg.configHome}/herdr/agent-detection/${name}.toml" {
+            source = toml.generate "herdr-agent-${name}.toml" value;
+          }
+        ) cfg.agentManifests;
       sessionVariables = {
-        HERDR_CONFIG_PATH = "${config.home.homeDirectory}/${cfg.configDir}/config.toml";
-        HERDR_SOCKET_PATH = "${config.home.homeDirectory}/${cfg.configDir}/herdr.sock";
+        HERDR_CONFIG_PATH = "${config.xdg.configHome}/herdr/config.toml";
+        HERDR_SOCKET_PATH = "${config.xdg.configHome}/herdr/herdr.sock";
       };
     };
   };

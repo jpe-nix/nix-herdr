@@ -23,8 +23,8 @@ let
   // cfg.server.environment
   // {
     HOME = home;
-    HERDR_CONFIG_PATH = "${home}/${cfg.configDir}/config.toml";
-    HERDR_SOCKET_PATH = "${home}/${cfg.configDir}/herdr.sock";
+    HERDR_CONFIG_PATH = "${config.xdg.configHome}/herdr/config.toml";
+    HERDR_SOCKET_PATH = "${config.xdg.configHome}/herdr/herdr.sock";
     XDG_CONFIG_HOME = config.xdg.configHome;
     XDG_STATE_HOME = config.xdg.stateHome;
   };

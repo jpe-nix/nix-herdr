@@ -18,14 +18,14 @@ HOME configuration directories. They do not discover runtime configuration
 directory overrides.
 
 | Integration | Default HOME directory |
-| --- | --- |
-| Devin | `~/.config/devin` |
-| Droid | `~/.factory` |
-| Kimi | `~/.kimi-code` |
-| Hermes | `~/.hermes` |
-| Qoder CLI | `~/.qoder` |
-| Cursor | `~/.cursor` |
-| MastraCode | `~/.mastracode` |
+| ----------- | ---------------------- |
+| Devin       | `~/.config/devin`      |
+| Droid       | `~/.factory`           |
+| Kimi        | `~/.kimi-code`         |
+| Hermes      | `~/.hermes`            |
+| Qoder CLI   | `~/.qoder`             |
+| Cursor      | `~/.cursor`            |
+| MastraCode  | `~/.mastracode`        |
 
 The app-owned renderer must provide the `settingsPath` option passed to
 `mkRendererModule` and render its native config file. Use the listed default

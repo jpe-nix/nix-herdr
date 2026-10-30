@@ -13,7 +13,7 @@ let
     COLLIE_HOST = "127.0.0.1";
     COLLIE_MUX = "herdr";
     COLLIE_CONFIG = "${config.home.homeDirectory}/.config/collie/nix-config.toml";
-    HERDR_SOCKET_PATH = "${config.home.homeDirectory}/${cfg.configDir}/herdr.sock";
+    HERDR_SOCKET_PATH = "${config.xdg.configHome}/herdr/herdr.sock";
     PATH = "${config.home.profileDirectory}/bin:/run/current-system/sw/bin:/usr/bin:/bin";
   };
 in

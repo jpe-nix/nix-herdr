@@ -22,7 +22,7 @@ let
       }
     ];
   };
-  configFile = home.config.home.file.".config/herdr/config.toml".source;
+  configFile = home.config.xdg.configFile."herdr/config.toml".source;
 in
 pkgs.runCommand "herdr-config-check" { } ''
   HERDR_CONFIG_PATH=${configFile} ${pkgs.lib.getExe package} config check > "$out"
