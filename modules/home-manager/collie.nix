@@ -14,8 +14,6 @@ let
   // collie.environment
   // {
     HOME = config.home.homeDirectory;
-    COLLIE_MUX = "herdr";
-    COLLIE_CONFIG = "${config.home.homeDirectory}/.config/collie/nix-config.toml";
     HERDR_SOCKET_PATH = "${config.xdg.configHome}/herdr/herdr.sock";
   };
 in
@@ -35,14 +33,15 @@ in
     environment = lib.mkOption {
       type = lib.types.attrsOf lib.types.str;
       default = { };
-      description = "Nonsecret environment values, including paths to runtime secret files where supported by Collie.";
+      description = "Nonsecret service-only environment values, including paths to runtime secret files where supported by Collie. Use settings for values shared with the CLI.";
     };
   };
   config = lib.mkIf (cfg.enable && collie.enable) (
     lib.mkMerge [
       {
         home.packages = [ collie.package ];
-        home.file.".config/collie/nix-config.toml".source =
+        programs.herdr.collie.settings.mux.mux = lib.mkDefault "herdr";
+        home.file.".collie/config.toml".source =
           (pkgs.formats.toml { }).generate "collie-config.toml"
             collie.settings;
       }
