@@ -12,10 +12,6 @@
     herdr-upstream.url = "github:kevinpita/herdr-nix";
     collie-upstream.url = "github:AltanS/collie";
     native-ui.url = "github:penso/herdr-gpui";
-    nix-claude-code = {
-      url = "github:dryvist/nix-claude-code?ref=v2";
-      flake = false;
-    };
   };
 
   outputs =
@@ -38,6 +34,10 @@
         homeModules.default = self.homeManagerModules.default;
         nixosModules.default = import ./modules/nixos.nix { inherit inputs; };
         darwinModules.default = import ./modules/darwin.nix;
+        templates.home-manager = {
+          path = ./templates/home-manager;
+          description = "Home Manager configuration using nix-herdr";
+        };
       };
       perSystem =
         {
@@ -60,6 +60,10 @@
             inputsFrom = [ config.pre-commit.devShell ];
           };
           checks = {
+            config = import ./checks/config.nix {
+              inherit inputs pkgs;
+              package = self.packages.${system}.herdr;
+            };
             defaults = import ./checks/defaults.nix { inherit inputs pkgs; };
             services = import ./checks/services.nix { inherit inputs pkgs; };
             integrations = import ./checks/integrations.nix {

@@ -7,25 +7,31 @@
 let
   cfg = config.programs.herdr;
   toml = pkgs.formats.toml { };
-  remote = lib.optionalAttrs (cfg.remotes != { } || cfg.defaultRemote != null) {
-    remote = {
-      hosts = cfg.remotes;
-    }
-    // lib.optionalAttrs (cfg.defaultRemote != null) { default = cfg.defaultRemote; };
-  };
 in
 {
   config = lib.mkIf cfg.enable {
+    assertions = [
+      {
+        assertion = cfg.remotes == { } && cfg.defaultRemote == null;
+        message = "Herdr no longer supports remotes or defaultRemote; migrate to programs.herdr.machines and select the machine in the client.";
+      }
+    ];
     home = {
       packages = lib.optional (cfg.package != null) cfg.package;
       file = {
-        "${cfg.configDir}/config.toml".source = toml.generate "herdr-config.toml" (
-          lib.recursiveUpdate remote cfg.settings
-        );
+        "${cfg.configDir}/config.toml".source = toml.generate "herdr-config.toml" cfg.settings;
+      }
+      // lib.optionalAttrs (cfg.machines != null) {
+        "${config.xdg.stateHome}/herdr/client/endpoints.json".source =
+          (pkgs.formats.json { }).generate "herdr-endpoints.json"
+            {
+              version = 1;
+              ssh = lib.attrValues cfg.machines;
+            };
       }
       // lib.mapAttrs' (
         name: value:
-        lib.nameValuePair "${cfg.configDir}/agent-detection/${name}.toml" {
+        lib.nameValuePair "${config.xdg.configHome}/herdr/agent-detection/${name}.toml" {
           source = toml.generate "herdr-agent-${name}.toml" value;
         }
       ) cfg.agentManifests;
