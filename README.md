@@ -65,8 +65,11 @@ they must contain no secrets. The complete Home Manager consumer flake is in
   Homebrew cask. Enabling the Home Manager option on macOS fails explicitly.
 - `programs.herdr.collie.enable` defaults to `false`. It adds the
   [Collie](https://github.com/AltanS/collie) bridge and a user service for
-  Collie's upstream phone/PWA client. Its TOML settings and environment values
-  are consumer supplied and must not contain secrets.
+  Collie's upstream phone/PWA client. Shared nonsecret settings are written to
+  `~/.collie/config.toml`; the service-only `environment` option is not passed
+  to ordinary CLI commands. Collie's instance configuration and `.env` can
+  override shared settings and should be reconciled with them. Values in Nix
+  must not contain secrets.
 - Every `programs.herdr.integrations.<name>.enable` option defaults to `false`.
 
 ## Agent integrations
