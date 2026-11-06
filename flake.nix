@@ -12,9 +12,19 @@
       url = "github:nix-community/home-manager/095fef2f265c3c0da4fe315efba8f8a04495ab34";
       flake = false;
     };
-    nix-devenv.url = "github:dryvist/nix-devenv?ref=v0";
-    collie-upstream.url = "github:AltanS/collie";
-    native-ui.url = "github:penso/herdr-gpui";
+    nix-devenv = {
+      url = "github:dryvist/nix-devenv?ref=v0";
+      inputs.channels.inputs.nixpkgs.follows = "nixpkgs";
+      inputs.channels.inputs.nixpkgs-unstable.follows = "nixpkgs";
+    };
+    collie-upstream = {
+      url = "github:AltanS/collie";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    native-ui = {
+      url = "github:penso/herdr-gpui";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
