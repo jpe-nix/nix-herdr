@@ -486,6 +486,22 @@
         "type": "github"
       }
     },
+    "penso-tap": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1793169243,
+        "narHash": "sha256-cBADammNcFl+N0PnoA4fCHJczSF8Ck6FWU8pnVR1B/s=",
+        "owner": "penso",
+        "repo": "homebrew-tap",
+        "rev": "238454b44704bcf382d4f2db51dd20496899f14f",
+        "type": "github"
+      },
+      "original": {
+        "owner": "penso",
+        "repo": "homebrew-tap",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "collie-upstream": "collie-upstream",
@@ -494,7 +510,8 @@
         "home-manager-src": "home-manager-src",
         "native-ui": "native-ui",
         "nix-devenv": "nix-devenv",
-        "nixpkgs": "nixpkgs"
+        "nixpkgs": "nixpkgs",
+        "penso-tap": "penso-tap"
       }
     },
     "rust-overlay": {
