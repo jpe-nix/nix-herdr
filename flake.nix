@@ -25,6 +25,11 @@
       url = "github:penso/herdr-gpui";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    # Homebrew tap for the herdr-gpui cask, locked for nix-homebrew hosts.
+    penso-tap = {
+      url = "github:penso/homebrew-tap";
+      flake = false;
+    };
   };
 
   outputs =
@@ -46,7 +51,7 @@
         homeManagerModules.default = import ./modules/home-manager { inherit inputs; };
         homeModules.default = self.homeManagerModules.default;
         nixosModules.default = import ./modules/nixos.nix { inherit inputs; };
-        darwinModules.default = import ./modules/darwin.nix;
+        darwinModules.default = import ./modules/darwin.nix { inherit inputs; };
         templates.home-manager = {
           path = ./templates/home-manager;
           description = "Home Manager configuration using nix-herdr";
