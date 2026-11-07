@@ -16,3 +16,6 @@ Configuration and examples must not include personal host details,
 credentials, or secret values. Prefer native Nix modules and application
 renderers. Do not introduce imperative setup or activation scripts for
 features represented by options.
+
+The shared release workflow manages release pull requests, versions, and tags
+from changes merged to `main`.
