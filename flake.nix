@@ -72,6 +72,8 @@
               inherit (pkgs.herdr) version meta;
               postBuild = ''
                 mkdir -p "$out/share/herdr"
+                # The base package may already ship integrations, linked in read-only.
+                rm -rf "$out/share/herdr/integrations"
                 cp -R ${pkgs.herdr.src}/src/integration/assets "$out/share/herdr/integrations"
                 chmod -R u+w "$out/share/herdr/integrations"
                 for hook in "$out"/share/herdr/integrations/*/*.sh; do
