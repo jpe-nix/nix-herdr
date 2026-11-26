@@ -102,6 +102,7 @@
               inherit inputs pkgs;
               package = self.packages.${system}.herdr;
             };
+            darwin = import ./checks/darwin.nix { inherit inputs pkgs; };
             defaults = import ./checks/defaults.nix { inherit inputs pkgs; };
             services = import ./checks/services.nix { inherit inputs pkgs; };
             integrations = import ./checks/integrations.nix {
