@@ -6,7 +6,8 @@
   ...
 }:
 {
-  options.programs.herdr.nativeUI.enable = lib.mkEnableOption "the Herdr UI client";
+  options.programs.herdr.nativeUI.enable =
+    lib.mkEnableOption "the Sheprd desktop client (formerly Herdr UI)";
   config = lib.mkIf (config.programs.herdr.enable && config.programs.herdr.nativeUI.enable) {
     assertions = [
       {

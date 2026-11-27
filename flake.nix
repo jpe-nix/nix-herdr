@@ -22,12 +22,12 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     native-ui = {
-      url = "github:penso/herdr-gpui";
+      url = "github:sheprd-labs/sheprd";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    # Homebrew tap for the herdr-gpui cask, locked for nix-homebrew hosts.
-    penso-tap = {
-      url = "github:penso/homebrew-tap";
+    # Homebrew tap for the Sheprd cask, locked for nix-homebrew hosts.
+    sheprd-tap = {
+      url = "github:sheprd-labs/homebrew-tap";
       flake = false;
     };
   };
