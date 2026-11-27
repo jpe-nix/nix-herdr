@@ -82,12 +82,36 @@ let
       }
     ];
   };
+  core = inputs.home-manager.lib.homeManagerConfiguration {
+    inherit pkgs;
+    modules = [
+      inputs.self.homeManagerModules.default
+      {
+        home = {
+          username = "test";
+          homeDirectory = if pkgs.stdenv.hostPlatform.isDarwin then "/Users/test" else "/home/test";
+          stateVersion = "26.05";
+        };
+        programs.herdr = {
+          enable = true;
+          package = pkgs.hello;
+          core = {
+            enable = true;
+            package = pkgs.cowsay;
+          };
+        };
+      }
+    ];
+  };
 in
 assert !cfg.enable;
 assert !cfg.server.enable;
 assert cfg.server.launchPrefix == [ ] && cfg.server.environment == { };
 assert !cfg.collie.enable;
 assert !cfg.nativeUI.enable;
+assert !cfg.core.enable;
+assert !(builtins.elem pkgs.cowsay enabled.config.home.packages);
+assert builtins.elem pkgs.cowsay core.config.home.packages;
 assert !(builtins.tryEval legacy.config.programs.herdr.enable).success;
 assert cfg.machines == null;
 assert builtins.all (integration: !integration.enable) (builtins.attrValues cfg.integrations);
