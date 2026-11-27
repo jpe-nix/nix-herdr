@@ -333,16 +333,16 @@
         "rust-overlay": "rust-overlay"
       },
       "locked": {
-        "lastModified": 1793343984,
-        "narHash": "sha256-fIxW7xbD8YIpzOYNllEWSGOFR/7oAtkPG0a3LzTA1Eg=",
-        "owner": "penso",
-        "repo": "herdr-gpui",
-        "rev": "f92f14d94b259377859a485cb458e7babdf78aa9",
+        "lastModified": 1795736605,
+        "narHash": "sha256-R4hjCdPoQPO0yMslhdVz8XYzlw2eNvieD5NGegH0TTE=",
+        "owner": "sheprd-labs",
+        "repo": "sheprd",
+        "rev": "fa85efc4a601a7c597465ce719d26cb4dc2ef3bf",
         "type": "github"
       },
       "original": {
-        "owner": "penso",
-        "repo": "herdr-gpui",
+        "owner": "sheprd-labs",
+        "repo": "sheprd",
         "type": "github"
       }
     },
@@ -486,22 +486,6 @@
         "type": "github"
       }
     },
-    "penso-tap": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1793169243,
-        "narHash": "sha256-cBADammNcFl+N0PnoA4fCHJczSF8Ck6FWU8pnVR1B/s=",
-        "owner": "penso",
-        "repo": "homebrew-tap",
-        "rev": "238454b44704bcf382d4f2db51dd20496899f14f",
-        "type": "github"
-      },
-      "original": {
-        "owner": "penso",
-        "repo": "homebrew-tap",
-        "type": "github"
-      }
-    },
     "root": {
       "inputs": {
         "collie-upstream": "collie-upstream",
@@ -511,7 +495,7 @@
         "native-ui": "native-ui",
         "nix-devenv": "nix-devenv",
         "nixpkgs": "nixpkgs",
-        "penso-tap": "penso-tap"
+        "sheprd-tap": "sheprd-tap"
       }
     },
     "rust-overlay": {
@@ -522,11 +506,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1790062494,
-        "narHash": "sha256-Mds1vuoczq1fRm1rf+Iar8IKDBHNjOMo2JqqPWJUlng=",
+        "lastModified": 1793956102,
+        "narHash": "sha256-dASUovwB3DUoTm6daga0hsNZZAFCCGlUS4FPBjK0OwA=",
         "owner": "oxalica",
         "repo": "rust-overlay",
-        "rev": "b88764907c1b2de6c0e206d8d9d9634d91c81334",
+        "rev": "74cebce67ef6671ea48fda353a5be2d229bd2920",
         "type": "github"
       },
       "original": {
@@ -554,6 +538,22 @@
       "original": {
         "owner": "oxalica",
         "repo": "rust-overlay",
+        "type": "github"
+      }
+    },
+    "sheprd-tap": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1795711533,
+        "narHash": "sha256-y4xdI2bFP1Sk5sjjRLft8fXXhYWjd3sF6TIAMvWoRpE=",
+        "owner": "sheprd-labs",
+        "repo": "homebrew-tap",
+        "rev": "c3d6a07d06fc93edbc761bf17dcc03cd29d0ba98",
+        "type": "github"
+      },
+      "original": {
+        "owner": "sheprd-labs",
+        "repo": "homebrew-tap",
         "type": "github"
       }
     },

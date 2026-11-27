@@ -58,13 +58,13 @@ they must contain no secrets. The complete Home Manager consumer flake is in
   starts a per-user service on Linux or macOS. The NixOS module separately
   exposes `programs.herdr.enable`, `package`, and `server.enable` for a
   per-user systemd service.
-- `programs.herdr.nativeUI.enable` defaults to `false`. Home Manager installs
-  the native [herdr-gpui](https://github.com/penso/herdr-gpui) client on Linux;
-  on macOS, import `darwinModules.default` and set the option at the
-  nix-darwin system level, outside `home-manager.users`, to declare its
-  Homebrew cask and expose its companion CLIs (`herdr-automate`, `herdr-acp`,
-  and `herdr-remote-control`) on `PATH`. Enabling the Home Manager option on
-  macOS fails explicitly.
+- `programs.herdr.nativeUI.enable` defaults to `false`. It installs
+  [Sheprd](https://github.com/sheprd-labs/sheprd), the native desktop client
+  formerly called Herdr UI. Home Manager installs it from Sheprd's flake on
+  Linux. On macOS, import `darwinModules.default` and set the option at the
+  nix-darwin system level, outside `home-manager.users`: it declares the
+  official `sheprd-labs/tap/sheprd` Homebrew cask, which also puts the `sheprd`
+  command on `PATH`. Enabling the Home Manager option on macOS fails explicitly.
 - `programs.herdr.collie.enable` defaults to `false`. It adds the
   [Collie](https://github.com/AltanS/collie) bridge and a user service for
   Collie's upstream phone/PWA client. Shared nonsecret settings are written to
@@ -149,7 +149,7 @@ architecture.
 
 - Herdr TUI: [herdrdev/herdr](https://github.com/herdrdev/herdr)
 - Herdr package: [Nixpkgs](https://github.com/NixOS/nixpkgs)
-- Native UI: [penso/herdr-gpui](https://github.com/penso/herdr-gpui)
+- Native UI: [sheprd-labs/sheprd](https://github.com/sheprd-labs/sheprd)
 - Collie bridge: [AltanS/collie](https://github.com/AltanS/collie)
 
 ## License
