@@ -87,6 +87,7 @@
                 done
               '';
             };
+            herdr-core = pkgs.callPackage ./packages/herdr-core.nix { };
             collie = inputs.collie-upstream.packages.${system}.collie;
             default = self.packages.${system}.herdr;
           };
@@ -102,6 +103,12 @@
               inherit inputs pkgs;
               package = self.packages.${system}.herdr;
             };
+            core = pkgs.runCommand "herdr-core-version" { } ''
+              ${self.packages.${system}.herdr-core}/bin/hc --version | grep -F ${
+                self.packages.${system}.herdr-core.version
+              }
+              touch "$out"
+            '';
             darwin = import ./checks/darwin.nix { inherit inputs pkgs; };
             defaults = import ./checks/defaults.nix { inherit inputs pkgs; };
             services = import ./checks/services.nix { inherit inputs pkgs; };

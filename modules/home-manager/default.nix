@@ -29,6 +29,7 @@
     ./services.nix
     (import ./collie.nix { inherit inputs; })
     (import ./native-ui.nix { inherit inputs; })
+    (import ./core.nix { inherit inputs; })
     (import ./integrations.nix { inherit inputs; })
   ];
 }

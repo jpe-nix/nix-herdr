@@ -72,6 +72,11 @@ they must contain no secrets. The complete Home Manager consumer flake is in
   to ordinary CLI commands. Collie's instance configuration and `.env` can
   override shared settings and should be reconciled with them. Values in Nix
   must not contain secrets.
+- `programs.herdr.core.enable` defaults to `false`. It installs
+  [herdr-core](https://github.com/herdrdev/herdr-core) (`hc`, packaged as
+  `packages.herdr-core` from its signed release builds). Herdr clients that
+  add this machine over SSH, including the mobile app, run `herdr-core` from the
+  login's `PATH`. `hc update` leaves a Nix-installed core to Nix.
 - Every `programs.herdr.integrations.<name>.enable` option defaults to `false`.
 
 ## Agent integrations
@@ -120,7 +125,8 @@ renderer combines these with the legacy `programs.claude.settings.hooks`.
 
 The flake exports `homeManagerModules.default` (also `homeModules.default`),
 `nixosModules.default`, `darwinModules.default`, and `lib.integrations`.
-Packages are `packages.herdr`, `packages.collie`, and `packages.default`;
+Packages are `packages.herdr`, `packages.herdr-core`, `packages.collie`, and
+`packages.default`;
 `apps.default` runs the Herdr TUI.
 
 Supported systems are `aarch64-darwin`, `aarch64-linux`, and `x86_64-linux`.
