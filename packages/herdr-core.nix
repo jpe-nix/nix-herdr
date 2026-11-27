@@ -8,6 +8,7 @@ let
 
   # Nix system -> release target. Hashes are the sha256 values in
   # https://releases.herdr.dev/core/<version>/manifest.json, in SRI form.
+  # shortcut: version and hashes are bumped by hand; automate them once Renovate can read that manifest.
   targets = {
     aarch64-darwin = {
       name = "macos-aarch64";
